@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
+    "json-as-xlsx": "^2.5.5",
     "langchain": "^0.0.174",
     "next": "14.0.0",
     "pdfjs-dist": "^3.11.174",

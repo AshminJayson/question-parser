@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { load } from "js-yaml";
+import { parseXLSX } from "@/utils/parser";
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
@@ -49,6 +50,11 @@ export default function Home() {
         console.log(body.message);
     };
 
+    const downloadXLSX = async () => {
+        if (!file) return;
+        parseXLSX(file.name);
+    };
+
     return (
         <div>
             <input type="file" onChange={handleFileChange} />
@@ -60,6 +66,7 @@ export default function Home() {
                 Send File
             </button>
             <button onClick={parseQuestions}>Parse Questions</button>
+            <button onClick={downloadXLSX}>Download XLSX</button>
         </div>
     );
 }
