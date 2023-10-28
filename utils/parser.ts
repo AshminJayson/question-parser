@@ -69,13 +69,13 @@ const sheetFormat = {
     columns: sheetHeaders.map((headerTerm) => {
         return {
             label: headerTerm,
-            value: (row: any) => (row.headerTerm ? row.headerTerm : ""),
+            value: (row: any) => (row[headerTerm] ? row[headerTerm] : ""),
         };
     }),
     content: mockData,
 };
 
-const sheet = [
+const sheets = [
     {
         sheet: sheetFormat.sheetName,
         columns: sheetFormat.columns,
@@ -90,5 +90,5 @@ export const parseXLSX = (fileName: string) => {
         writeMode: "writeFile",
         writeOptions: {},
     };
-    xlsx(sheet, settings);
+    xlsx(sheets, settings);
 };
