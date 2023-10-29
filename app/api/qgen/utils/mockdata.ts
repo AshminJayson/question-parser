@@ -1,4 +1,4 @@
-const mockData = `[
+export const mockData = `[
     {
       "Question": "What is the free luggage allowance?",
       "QuestionNumber": "I.13982",

@@ -7,6 +7,7 @@ export default function Home() {
     const [file, setFile] = useState<File | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
     const [questionJSON, setQuestionJSON] = useState<string>("");
+    const [questions, setQuestions] = useState(null);
 
     async function sendFile(): Promise<void> {
         if (!file) {
@@ -50,14 +51,16 @@ export default function Home() {
 
         const body = await response.json();
         console.log(body.message);
+
         setQuestionJSON(body.message);
-        console.log(JSON.parse(body.message));
+        setQuestions(load(body.message) as any);
+
         alert("Questions generated successfully!");
     };
 
     const downloadXLSX = async () => {
         if (!file) return;
-        parseXLSX(file.name);
+        parseXLSX(file.name, questions);
     };
 
     return (

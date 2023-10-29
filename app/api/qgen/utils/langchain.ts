@@ -1,5 +1,5 @@
 import { OpenAI } from "langchain/llms/openai";
-import { PromptTemplate } from "langchain/prompts";
+import { mockData } from "./mockdata";
 
 const llm = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
@@ -50,7 +50,7 @@ export const getQuestions = async (extractedText: string) => {
         Math.floor(extractedText.length / 2)
     );
 
-    return mockData;
+    // return mockData;
     console.log("Generating questions...");
     console.time("llm call");
     // console.log(res);

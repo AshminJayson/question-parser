@@ -64,31 +64,32 @@ const mockData = Array.from({ length: 5 }, (_, i) => ({
 
 // console.log(data);
 
-const sheetFormat = {
-    sheetName: "QuestionFormat",
-    columns: sheetHeaders.map((headerTerm) => {
-        return {
-            label: headerTerm,
-            value: (row: any) => (row[headerTerm] ? row[headerTerm] : ""),
-        };
-    }),
-    content: mockData,
+const getSheets = (fileName: string, questions: any) => {
+    const sheets = [
+        {
+            sheet: fileName,
+            columns: sheetHeaders.map((headerTerm) => {
+                return {
+                    label: headerTerm,
+                    value: (row: any) =>
+                        row[headerTerm] ? row[headerTerm] : "",
+                };
+            }),
+            content: questions,
+        },
+    ];
+
+    return sheets;
 };
 
-const sheets = [
-    {
-        sheet: sheetFormat.sheetName,
-        columns: sheetFormat.columns,
-        content: sheetFormat.content,
-    },
-];
-
-export const parseXLSX = (fileName: string) => {
+export const parseXLSX = (fileName: string, questions: any) => {
     const settings = {
         fileName: fileName,
         extraLength: 4,
         writeMode: "writeFile",
         writeOptions: {},
     };
-    xlsx(sheets, settings);
+
+    console.log(getSheets(fileName, questions));
+    xlsx(getSheets(fileName, questions), settings);
 };
