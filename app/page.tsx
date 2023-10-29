@@ -51,6 +51,7 @@ export default function Home() {
         const body = await response.json();
         console.log(body.message);
         setQuestionJSON(body.message);
+        console.log(JSON.parse(body.message));
         alert("Questions generated successfully!");
     };
 
