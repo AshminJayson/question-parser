@@ -6,6 +6,7 @@ import { parseXLSX } from "@/utils/parser";
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
+    const [questionJSON, setQuestionJSON] = useState<string>("");
 
     async function sendFile(): Promise<void> {
         if (!file) {
@@ -24,6 +25,7 @@ export default function Home() {
             const body = await response.json();
             console.log(body["extractedText"]);
             setExtractedText(body["extractedText"]);
+            alert("File uploaded successfully!");
 
             if (!response.ok) {
                 throw new Error("Failed to upload file");
@@ -48,6 +50,8 @@ export default function Home() {
 
         const body = await response.json();
         console.log(body.message);
+        setQuestionJSON(body.message);
+        alert("Questions generated successfully!");
     };
 
     const downloadXLSX = async () => {
