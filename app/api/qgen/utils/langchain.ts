@@ -1,11 +1,6 @@
 // import { OpenAI } from "langchain/llms/openai";
-import { HumanMessage } from "langchain/schema";
-import { ChatOpenAI } from "langchain/chat_models/openai";
 import { OpenAI } from "langchain/llms/openai";
 
-let totalCompletionTokens = 0,
-    totalPromptTokens = 0,
-    totalExecutionTokens = 0;
 const llm = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     maxTokens: -1,

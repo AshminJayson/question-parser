@@ -47,6 +47,8 @@ export default function Home() {
 
     const parseQuestions = async () => {
         setLoading(true);
+        setQuestionJSON("");
+        setQuestions(null);
 
         try {
             const response = await fetch("/api/qgen", {

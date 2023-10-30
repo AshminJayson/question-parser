@@ -12,7 +12,7 @@ const extractPdfData = async (file: File) => {
         const numPages = pdfDoc.numPages;
         let extractedText = "";
 
-        for (let i = 1; i <= 1; i++) {
+        for (let i = 1; i <= numPages; i++) {
             const page = await pdfDoc.getPage(i);
             const content = await page.getTextContent();
             // console.log(content);
