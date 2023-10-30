@@ -54,7 +54,7 @@ export const getQuestions = async (extractedText: string) => {
     console.log("Generating questions...");
     console.time("llm call");
     // console.log(res);
-    const res = await llm.call(getPrompt(firstHalf));
+    const res = await llm.call(getPrompt(extractedText));
     console.timeEnd("llm call");
     return res;
 };
