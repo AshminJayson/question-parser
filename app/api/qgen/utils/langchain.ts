@@ -7,7 +7,7 @@ const llm = new OpenAI({
     modelName: "gpt-3.5-turbo-16k",
 });
 
-const getPrompt = (text: string) => {
+export const getPrompt = (text: string) => {
     return `
     
     ---BEGIN INSTRUCTIONS---

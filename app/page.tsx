@@ -120,31 +120,33 @@ export default function Home() {
                                 </th>
                             </tr>
                         </thead>
-                        {questions.map((question: any, index: number) => (
-                            <tr key={index}>
-                                <td className="border-black border">
-                                    {index + 1}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Question}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Option1}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Option2}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Option3}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Option4}
-                                </td>
-                                <td className="border-black border">
-                                    {question.Option5}
-                                </td>
-                            </tr>
-                        ))}
+                        <tbody>
+                            {questions.map((question: any, index: number) => (
+                                <tr key={index}>
+                                    <td className="border-black border">
+                                        {index + 1}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Question}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Option1}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Option2}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Option3}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Option4}
+                                    </td>
+                                    <td className="border-black border">
+                                        {question.Option5}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
                     </table>
                     <button
                         className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
