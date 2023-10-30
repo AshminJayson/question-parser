@@ -47,17 +47,21 @@ export default function Home() {
 
     const parseQuestions = async () => {
         setLoading(true);
-        const response = await fetch("/api/qgen", {
-            method: "POST",
-            body: JSON.stringify({ extractedText: extractedText }),
-        });
 
-        const body = await response.json();
-        console.log(body.message);
+        try {
+            const response = await fetch("/api/qgen", {
+                method: "POST",
+                body: JSON.stringify({ extractedText: extractedText }),
+            });
 
-        setQuestionJSON(body.message);
-        setQuestions(load(body.message) as any);
+            const body = await response.json();
+            console.log(body.message);
 
+            setQuestionJSON(body.message);
+            setQuestions(load(body.message) as any);
+        } catch {
+            console.error("Error parsing questions");
+        }
         // alert("Questions generated successfully!");
         setLoading(false);
     };
