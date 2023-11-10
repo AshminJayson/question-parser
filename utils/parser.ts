@@ -90,6 +90,6 @@ export const parseXLSX = (fileName: string, questions: any) => {
         writeOptions: {},
     };
 
-    console.log(getSheets(fileName, questions));
-    xlsx(getSheets(fileName, questions), settings);
+    console.log(getSheets(fileName.slice(20), questions));
+    xlsx(getSheets(fileName.slice(20), questions), settings);
 };

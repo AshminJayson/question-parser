@@ -62,12 +62,6 @@ export const getPrompt = (text: string) => {
 };
 
 export const getQuestions = async (extractedText: string): Promise<any> => {
-    const firstHalf = extractedText.slice(
-        0,
-        Math.floor(extractedText.length / 8)
-    );
-
-    return mockData;
     console.log("Generating questions...");
     console.time("llm call");
 

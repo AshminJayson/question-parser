@@ -1,16 +1,85 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { load } from "js-yaml";
 import { parseXLSX } from "@/utils/parser";
 import { Loader2 } from "lucide-react";
+
+const QuestionsTable = ({
+    questions,
+    file,
+    textId,
+}: {
+    questions: any;
+    file?: File;
+    textId?: string;
+}) => {
+    const downloadXLSX = async () => {
+        if (file) parseXLSX(file.name, questions);
+        else if (textId) parseXLSX(textId, questions);
+        else console.error("No file or textId provided");
+    };
+    return (
+        <div className="flex flex-col p-10">
+            <table className=" border-black border-collapse ">
+                <thead>
+                    <tr>
+                        <th className="border-black border">No</th>
+                        <th className="border-black border">Question</th>
+                        <th className="border-black border">Option 1</th>
+                        <th className="border-black border">Option 2</th>
+                        <th className="border-black border">Option 3</th>
+                        <th className="border-black border">Option 4</th>
+                        <th className="border-black border">Option 5</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {questions.map((question: any, index: number) => (
+                        <tr key={index}>
+                            <td className="border-black border">{index + 1}</td>
+                            <td className="border-black border">
+                                {question.Question}
+                            </td>
+                            <td className="border-black border">
+                                {question.Option1}
+                            </td>
+                            <td className="border-black border">
+                                {question.Option2}
+                            </td>
+                            <td className="border-black border">
+                                {question.Option3}
+                            </td>
+                            <td className="border-black border">
+                                {question.Option4}
+                            </td>
+                            <td className="border-black border">
+                                {question.Option5}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <button
+                className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
+                onClick={downloadXLSX}
+            >
+                Download as XLSX
+            </button>
+        </div>
+    );
+};
 
 export default function Home() {
     const [file, setFile] = useState<File | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
     const [questionJSON, setQuestionJSON] = useState<string>("");
     const [fileIds, setFileIds] = useState<string[]>([]);
+    const [textIds, setTextIds] = useState<string[]>([]);
     const [questions, setQuestions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [activeExtract, setActiveExtract] = useState<File | string | null>(
+        null
+    );
+    const textareaRef = useRef(null);
 
     async function sendFile(): Promise<void> {
         if (!file) {
@@ -73,6 +142,38 @@ export default function Home() {
         setLoading(false);
     };
 
+    const parseText = async () => {
+        if (!textareaRef || !textareaRef.current) return;
+
+        const response = await fetch("/api/qgen", {
+            method: "POST",
+            body: JSON.stringify({
+                extractedText: (textareaRef.current as HTMLTextAreaElement)
+                    .value,
+            }),
+        });
+
+        const body = await response.json();
+
+        console.log(body.textId);
+        setTextIds((textIds) => [...textIds, body["textId"]]);
+    };
+
+    const fetchQuestionsFromText = async (textId: string) => {
+        const response = await fetch(`/api/qgen?textId=${textId}`);
+
+        const body = await response.json();
+
+        if (!body) {
+            console.warn("Questions have not been parsed");
+            return;
+        }
+
+        console.log(body["questions"]);
+        setQuestionJSON(body["questions"]);
+        setQuestions(load(body["questions"]) as any);
+        setActiveExtract(textId);
+    };
     const getResults = async (fileId: string) => {
         setQuestionJSON("");
         setQuestions([]);
@@ -85,9 +186,12 @@ export default function Home() {
             const body = await response.json();
             console.log(body);
 
+            if (body.length == 0) {
+                alert("File parsing incomplete, please try again");
+                return;
+            }
             for (const singlePageQuestions of body) {
                 setQuestionJSON((jsonbody) => jsonbody + singlePageQuestions);
-                console.log(singlePageQuestions);
                 setQuestions([
                     ...questions,
                     ...(load(singlePageQuestions) as any),
@@ -99,11 +203,6 @@ export default function Home() {
         }
         // alert("Questions generated successfully!");
         setLoading(false);
-    };
-
-    const downloadXLSX = async () => {
-        if (!file) return;
-        parseXLSX(file.name, questions);
     };
 
     return (
@@ -133,7 +232,7 @@ export default function Home() {
                     </button>
                 )}
             </div>
-            {fileIds.length > 0 && (
+            {/* {fileIds.length > 0 && (
                 <div className="flex flex-col p-10">
                     <h1 className="text-lg font-semibold mb-4">
                         Uploaded Files
@@ -155,69 +254,53 @@ export default function Home() {
                         ))}
                     </ul>
                 </div>
-            )}
-            {questions.length > 0 && (
+            )} */}
+            {textIds.length > 0 && (
                 <div className="flex flex-col p-10">
-                    <table className=" border-black border-collapse ">
-                        <thead>
-                            <tr>
-                                <th className="border-black border">No</th>
-                                <th className="border-black border">
-                                    Question
-                                </th>
-                                <th className="border-black border">
-                                    Option 1
-                                </th>
-                                <th className="border-black border">
-                                    Option 2
-                                </th>
-                                <th className="border-black border">
-                                    Option 3
-                                </th>
-                                <th className="border-black border">
-                                    Option 4
-                                </th>
-                                <th className="border-black border">
-                                    Option 5
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {questions.map((question: any, index: number) => (
-                                <tr key={index}>
-                                    <td className="border-black border">
-                                        {index + 1}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Question}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Option1}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Option2}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Option3}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Option4}
-                                    </td>
-                                    <td className="border-black border">
-                                        {question.Option5}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <button
-                        className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
-                        onClick={downloadXLSX}
-                    >
-                        Download as XLSX
-                    </button>
+                    <h1 className="text-lg font-semibold mb-4">
+                        Uploaded Files
+                    </h1>
+                    <ul className="list-disc list-inside">
+                        {textIds.map((textId) => (
+                            <div
+                                key={textId}
+                                className="flex justify-between items-center"
+                            >
+                                <li>{textId}</li>
+                                <button
+                                    onClick={(e) =>
+                                        fetchQuestionsFromText(textId)
+                                    }
+                                    className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
+                                >
+                                    Get text data
+                                </button>
+                            </div>
+                        ))}
+                    </ul>
                 </div>
             )}
+            {questions.length > 0 && (
+                <>
+                    {activeExtract && activeExtract instanceof File && (
+                        <QuestionsTable
+                            file={activeExtract}
+                            questions={questions}
+                        />
+                    )}
+                    {activeExtract && typeof activeExtract === "string" && (
+                        <QuestionsTable
+                            textId={activeExtract}
+                            questions={questions}
+                        />
+                    )}
+                </>
+            )}
+
+            <div>
+                <textarea ref={textareaRef} />
+                <button onClick={parseText}>Test Timeout</button>
+            </div>
         </div>
     );
 }
