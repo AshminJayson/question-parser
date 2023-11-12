@@ -174,6 +174,7 @@ export default function Home() {
         setQuestions(load(body["questions"]) as any);
         setActiveExtract(textId);
     };
+
     const getResults = async (fileId: string) => {
         setQuestionJSON("");
         setQuestions([]);
