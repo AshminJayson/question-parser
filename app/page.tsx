@@ -72,7 +72,7 @@ export default function Home() {
     const [file, setFile] = useState<File | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
     const [questionJSON, setQuestionJSON] = useState<string>("");
-    const [fileIds, setFileIds] = useState<string[]>([]);
+    const [files, setFiles] = useState<any[]>([]);
     const [textIds, setTextIds] = useState<string[]>([]);
     const [questions, setQuestions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function Home() {
         formData.append("file", file);
 
         try {
-            const response = await fetch("https://localhost:7067/File/upload", {
+            const response = await fetch("http://localhost:8000/file", {
                 method: "POST",
                 body: formData,
             });
@@ -98,7 +98,7 @@ export default function Home() {
             const body = await response.json();
             // console.log(loaded["FileId"]);
 
-            setFileIds((fileIds) => [...fileIds, body["FileID"]]);
+            setFiles((files) => [...files, [file.name, body["fileId"]]]);
 
             // setExtractedText(body["extractedText"]);
             // alert("File uploaded successfully!");
@@ -181,23 +181,31 @@ export default function Home() {
         try {
             console.log("Sending request");
             const response = await fetch(
-                `https://localhost:7067/File/extract/${fileId}`
+                `http://localhost:8000/file?fileId=${fileId}`
             );
 
             const body = await response.json();
             console.log(body);
+            if (body["status_code"] == 404 || body["status_code"] == 100) {
+                alert(body["detail"]);
+                return;
+            }
 
             if (body.length == 0) {
                 alert("File parsing incomplete, please try again");
                 return;
             }
+
+            const tempquestions: any[] = [];
             for (const singlePageQuestions of body) {
                 setQuestionJSON((jsonbody) => jsonbody + singlePageQuestions);
-                setQuestions([
-                    ...questions,
-                    ...(load(singlePageQuestions) as any),
-                ]);
+                // console.log(singlePageQuestions);
+                tempquestions.push(...singlePageQuestions);
+                console.log(tempquestions);
             }
+
+            setQuestions(tempquestions);
+            setActiveExtract(file);
         } catch (err) {
             console.log(err);
             console.error("Error parsing questions");
@@ -233,20 +241,21 @@ export default function Home() {
                     </button>
                 )}
             </div>
-            {/* {fileIds.length > 0 && (
+            {files.length > 0 && (
                 <div className="flex flex-col p-10">
                     <h1 className="text-lg font-semibold mb-4">
                         Uploaded Files
                     </h1>
                     <ul className="list-disc list-inside">
-                        {fileIds.map((fileId) => (
+                        {files.map((file) => (
                             <div
-                                key={fileId}
+                                key={file[0]}
                                 className="flex justify-between items-center"
                             >
-                                <li>{fileId}</li>
+                                <li>{file[0]}</li>
+                                <li>{file[1]}</li>
                                 <button
-                                    onClick={(e) => getResults(fileId)}
+                                    onClick={(e) => getResults(file[1])}
                                     className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
                                 >
                                     Get file data
@@ -255,7 +264,7 @@ export default function Home() {
                         ))}
                     </ul>
                 </div>
-            )} */}
+            )}
             {textIds.length > 0 && (
                 <div className="flex flex-col p-10">
                     <h1 className="text-lg font-semibold mb-4">
