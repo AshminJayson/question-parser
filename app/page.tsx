@@ -3,18 +3,22 @@ import { useRef, useState } from "react";
 import { load } from "js-yaml";
 import { parseXLSX } from "@/utils/parser";
 import { Loader2 } from "lucide-react";
+import { parse } from "path";
 
 const QuestionsTable = ({
     questions,
     file,
     textId,
+    fileName,
 }: {
     questions: any;
+    fileName?: string;
     file?: File;
     textId?: string;
 }) => {
     const downloadXLSX = async () => {
-        if (file) parseXLSX(file.name, questions);
+        if (fileName) parseXLSX(fileName, questions);
+        else if (file) parseXLSX(file.name, questions);
         else if (textId) parseXLSX(textId, questions);
         else console.error("No file or textId provided");
     };
@@ -36,6 +40,9 @@ const QuestionsTable = ({
                     {questions.map((question: any, index: number) => (
                         <tr key={index}>
                             <td className="border-black border">{index + 1}</td>
+                            <td className="border-black border">
+                                {question.QuestionNumber}
+                            </td>
                             <td className="border-black border">
                                 {question.Question}
                             </td>

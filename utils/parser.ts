@@ -2,6 +2,7 @@ import xlsx from "json-as-xlsx";
 
 const sheetHeaders = [
     "SerialNo",
+    "QuestionNumber",
     "SectionName",
     "Tag",
     "PositiveMark",
