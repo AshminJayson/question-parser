@@ -1,27 +1,19 @@
 "use client";
-import { useRef, useState } from "react";
-import { load } from "js-yaml";
+import { useEffect, useState } from "react";
 import { parseXLSX } from "@/utils/parser";
-import { Loader2 } from "lucide-react";
-import { parse } from "path";
 
 const QuestionsTable = ({
     questions,
-    file,
-    textId,
     fileName,
 }: {
     questions: any;
-    fileName?: string;
-    file?: File;
-    textId?: string;
+    fileName: string;
 }) => {
     const downloadXLSX = async () => {
         if (fileName) parseXLSX(fileName, questions);
-        else if (file) parseXLSX(file.name, questions);
-        else if (textId) parseXLSX(textId, questions);
         else console.error("No file or textId provided");
     };
+
     return (
         <div className="flex flex-col p-10">
             <table className=" border-black border-collapse ">
@@ -39,7 +31,6 @@ const QuestionsTable = ({
                 <tbody>
                     {questions.map((question: any, index: number) => (
                         <tr key={index}>
-                            <td className="border-black border">{index + 1}</td>
                             <td className="border-black border">
                                 {question.QuestionNumber}
                             </td>
@@ -83,10 +74,11 @@ export default function Home() {
     const [textIds, setTextIds] = useState<string[]>([]);
     const [questions, setQuestions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedFileName, setSelectedFileName] = useState<string>("");
     const [activeExtract, setActiveExtract] = useState<File | string | null>(
         null
     );
-    const textareaRef = useRef(null);
+    // const textareaRef = useRef(null);
 
     async function sendFile(): Promise<void> {
         if (!file) {
@@ -105,7 +97,10 @@ export default function Home() {
             const body = await response.json();
             // console.log(loaded["FileId"]);
 
-            setFiles((files) => [...files, [file.name, body["fileId"]]]);
+            setFiles((files) => [
+                ...files,
+                [file.name, body["fileId"], "scheduled"],
+            ]);
 
             // setExtractedText(body["extractedText"]);
             // alert("File uploaded successfully!");
@@ -125,73 +120,89 @@ export default function Home() {
         }
     };
 
-    const parseQuestions = async () => {
-        setLoading(true);
-        setQuestionJSON("");
-        setQuestions([]);
+    // const parseQuestions = async () => {
+    //     setLoading(true);
+    //     setQuestionJSON("");
+    //     setQuestions([]);
 
-        try {
-            const response = await fetch("/api/qgen", {
-                method: "POST",
-                body: JSON.stringify({ extractedText: extractedText }),
-            });
+    //     try {
+    //         const response = await fetch("/api/qgen", {
+    //             method: "POST",
+    //             body: JSON.stringify({ extractedText: extractedText }),
+    //         });
+
+    //         const body = await response.json();
+
+    //         console.log(body.message);
+
+    //         setQuestionJSON(body.message);
+    //         setQuestions(load(body.message) as any);
+    //     } catch {
+    //         console.error("Error parsing questions");
+    //     }
+    //     // alert("Questions generated successfully!");
+    //     setLoading(false);
+    // };
+
+    // const parseText = async () => {
+    //     if (!textareaRef || !textareaRef.current) return;
+
+    //     const response = await fetch("/api/qgen", {
+    //         method: "POST",
+    //         body: JSON.stringify({
+    //             extractedText: (textareaRef.current as HTMLTextAreaElement)
+    //                 .value,
+    //         }),
+    //     });
+
+    //     const body = await response.json();
+
+    //     console.log(body.textId);
+    //     setTextIds((textIds) => [...textIds, body["textId"]]);
+    // };
+
+    // const fetchQuestionsFromText = async (textId: string) => {
+    //     const response = await fetch(`/api/qgen?textId=${textId}`);
+
+    //     const body = await response.json();
+
+    //     if (!body) {
+    //         console.warn("Questions have not been parsed");
+    //         return;
+    //     }
+
+    //     console.log(body["questions"]);
+    //     setQuestionJSON(body["questions"]);
+    //     setQuestions(load(body["questions"]) as any);
+    //     setActiveExtract(textId);
+    // };
+
+    const refreshFileStatuses = async () => {
+        let newfiles = [];
+        for (let file of files) {
+            let fileId = file[0];
+            const response = await fetch(
+                `http://localhost:8000/file_status?fileId=${fileId}`
+            );
 
             const body = await response.json();
-
-            console.log(body.message);
-
-            setQuestionJSON(body.message);
-            setQuestions(load(body.message) as any);
-        } catch {
-            console.error("Error parsing questions");
-        }
-        // alert("Questions generated successfully!");
-        setLoading(false);
-    };
-
-    const parseText = async () => {
-        if (!textareaRef || !textareaRef.current) return;
-
-        const response = await fetch("/api/qgen", {
-            method: "POST",
-            body: JSON.stringify({
-                extractedText: (textareaRef.current as HTMLTextAreaElement)
-                    .value,
-            }),
-        });
-
-        const body = await response.json();
-
-        console.log(body.textId);
-        setTextIds((textIds) => [...textIds, body["textId"]]);
-    };
-
-    const fetchQuestionsFromText = async (textId: string) => {
-        const response = await fetch(`/api/qgen?textId=${textId}`);
-
-        const body = await response.json();
-
-        if (!body) {
-            console.warn("Questions have not been parsed");
-            return;
+            file[2] = body["status"];
+            newfiles.push(file);
         }
 
-        console.log(body["questions"]);
-        setQuestionJSON(body["questions"]);
-        setQuestions(load(body["questions"]) as any);
-        setActiveExtract(textId);
+        setFiles(newfiles);
     };
 
-    const getResults = async (fileId: string) => {
+    const getResults = async (fileName: string, fileId: string) => {
         setQuestionJSON("");
         setQuestions([]);
         try {
-            console.log("Sending request");
             const response = await fetch(
                 `http://localhost:8000/file?fileId=${fileId}`
             );
 
             const body = await response.json();
+            console.log("Sending request");
             console.log(body);
             if (body["status_code"] == 404 || body["status_code"] == 100) {
                 alert(body["detail"]);
@@ -213,6 +224,7 @@ export default function Home() {
 
             setQuestions(tempquestions);
             setActiveExtract(file);
+            setSelectedFileName(fileName);
         } catch (err) {
             console.log(err);
             console.error("Error parsing questions");
@@ -222,7 +234,10 @@ export default function Home() {
     };
 
     return (
-        <div className="p-10">
+        <div className="p-10 items-center flex flex-col gap-8">
+            <h3 className="font-bold text-4xl">
+                &ge; PDF TO QUESTION SET CONVERTER
+            </h3>
             <div className="flex items-center">
                 <input type="file" onChange={handleFileChange} />
                 {file && <p>Selected file: {file.name}</p>}
@@ -230,9 +245,9 @@ export default function Home() {
                     className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm mx-4 px-5 py-2.5 focus:outline-none"
                     onClick={sendFile}
                 >
-                    Extract Text
+                    Schedule Extraction
                 </button>
-                {extractedText.length > 0 && (
+                {/* {extractedText.length > 0 && (
                     <button
                         onClick={parseQuestions}
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none "
@@ -246,33 +261,57 @@ export default function Home() {
                             </div>
                         )}
                     </button>
-                )}
+                )} */}
             </div>
             {files.length > 0 && (
                 <div className="flex flex-col p-10">
-                    <h1 className="text-lg font-semibold mb-4">
-                        Uploaded Files
-                    </h1>
-                    <ul className="list-disc list-inside">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-lg font-semibold mb-4">
+                            Uploaded Files
+                        </h1>
+                        <button
+                            onClick={refreshFileStatuses}
+                            className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
+                        >
+                            Refresh
+                        </button>
+                    </div>
+                    <div>
                         {files.map((file) => (
                             <div
                                 key={file[0]}
-                                className="flex justify-between items-center"
+                                className="flex justify-center items-center gap-4"
                             >
-                                <li>{file[0]}</li>
-                                <li>{file[1]}</li>
+                                <div className="font-semibold">
+                                    Filename :{" "}
+                                    <span className="font-normal">
+                                        {file[0]}
+                                    </span>
+                                </div>
+                                <div className="font-semibold">
+                                    File ID :{" "}
+                                    <span className="font-normal">
+                                        {file[1]}
+                                    </span>
+                                </div>
+                                <div className="font-semibold">
+                                    Status :{" "}
+                                    <span className="font-normal">
+                                        {file[2]}
+                                    </span>
+                                </div>
                                 <button
-                                    onClick={(e) => getResults(file[1])}
-                                    className="self-end text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
+                                    onClick={() => getResults(file[0], file[1])}
+                                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 mt-4 py-2.5 focus:outline-none"
                                 >
                                     Get file data
                                 </button>
                             </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             )}
-            {textIds.length > 0 && (
+            {/* {textIds.length > 0 && (
                 <div className="flex flex-col p-10">
                     <h1 className="text-lg font-semibold mb-4">
                         Uploaded Files
@@ -296,28 +335,18 @@ export default function Home() {
                         ))}
                     </ul>
                 </div>
-            )}
+            )} */}
             {questions.length > 0 && (
-                <>
-                    {activeExtract && activeExtract instanceof File && (
-                        <QuestionsTable
-                            file={activeExtract}
-                            questions={questions}
-                        />
-                    )}
-                    {activeExtract && typeof activeExtract === "string" && (
-                        <QuestionsTable
-                            textId={activeExtract}
-                            questions={questions}
-                        />
-                    )}
-                </>
+                <QuestionsTable
+                    fileName={selectedFileName}
+                    questions={questions}
+                />
             )}
 
-            <div>
+            {/* <div>
                 <textarea ref={textareaRef} />
                 <button onClick={parseText}>Test Timeout</button>
-            </div>
+            </div> */}
         </div>
     );
 }
