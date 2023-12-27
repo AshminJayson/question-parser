@@ -185,6 +185,10 @@ export default function Home() {
         let newfiles = [];
         for (let file of files) {
             let fileId = file[0];
+            console.log(
+                process.env.NEXT_PUBLIC_API_ENDPOINT +
+                    `file_status?fileId=${fileId}`
+            );
             const response = await fetch(
                 process.env.NEXT_PUBLIC_API_ENDPOINT +
                     `file_status?fileId=${fileId}`
