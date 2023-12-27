@@ -94,6 +94,9 @@ export default function Home() {
                 {
                     method: "POST",
                     body: formData,
+                    headers: new Headers({
+                        "ngrok-skip-browser-warning": "69420",
+                    }),
                 }
             );
 
@@ -185,13 +188,15 @@ export default function Home() {
         let newfiles = [];
         for (let file of files) {
             let fileId = file[0];
-            console.log(
-                process.env.NEXT_PUBLIC_API_ENDPOINT +
-                    `file_status?fileId=${fileId}`
-            );
+
             const response = await fetch(
                 process.env.NEXT_PUBLIC_API_ENDPOINT +
-                    `file_status?fileId=${fileId}`
+                    `file_status?fileId=${fileId}`,
+                {
+                    headers: new Headers({
+                        "ngrok-skip-browser-warning": "69420",
+                    }),
+                }
             );
 
             const body = await response.json();
@@ -207,7 +212,12 @@ export default function Home() {
         setQuestions([]);
         try {
             const response = await fetch(
-                process.env.NEXT_PUBLIC_API_ENDPOINT + `file?fileId=${fileId}`
+                process.env.NEXT_PUBLIC_API_ENDPOINT + `file?fileId=${fileId}`,
+                {
+                    headers: new Headers({
+                        "ngrok-skip-browser-warning": "69420",
+                    }),
+                }
             );
 
             const body = await response.json();
