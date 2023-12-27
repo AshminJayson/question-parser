@@ -97,6 +97,7 @@ export default function Home() {
                 }
             );
 
+            console.log(process.env.NEXT_PUBLIC_API_ENDPOINT);
             const body = await response.json();
             // console.log(loaded["FileId"]);
 
