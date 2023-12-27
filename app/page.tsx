@@ -89,10 +89,13 @@ export default function Home() {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:8000/file", {
-                method: "POST",
-                body: formData,
-            });
+            const response = await fetch(
+                process.env.NEXT_PUBLIC_API_ENDPOINT + "file",
+                {
+                    method: "POST",
+                    body: formData,
+                }
+            );
 
             const body = await response.json();
             // console.log(loaded["FileId"]);
@@ -182,7 +185,8 @@ export default function Home() {
         for (let file of files) {
             let fileId = file[0];
             const response = await fetch(
-                `http://localhost:8000/file_status?fileId=${fileId}`
+                process.env.NEXT_PUBLIC_API_ENDPOINT +
+                    `file_status?fileId=${fileId}`
             );
 
             const body = await response.json();
@@ -198,7 +202,7 @@ export default function Home() {
         setQuestions([]);
         try {
             const response = await fetch(
-                `http://localhost:8000/file?fileId=${fileId}`
+                process.env.NEXT_PUBLIC_API_ENDPOINT + `file?fileId=${fileId}`
             );
 
             const body = await response.json();
