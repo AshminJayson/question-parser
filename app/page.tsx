@@ -237,7 +237,11 @@ export default function Home() {
             for (const singlePageQuestions of body) {
                 setQuestionJSON((jsonbody) => jsonbody + singlePageQuestions);
                 // console.log(singlePageQuestions);
-                tempquestions.push(...singlePageQuestions);
+                if (Array.isArray(singlePageQuestions)) {
+                    tempquestions.push(...singlePageQuestions);
+                } else {
+                    tempquestions.push(singlePageQuestions);
+                }
                 console.log(tempquestions);
             }
 
